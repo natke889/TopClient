@@ -84,18 +84,20 @@ RunTheTask() {
 		Write2Log debug "$STATUS"
 		Write2Log debug "before while"
 		while [ -z "${STATUS}" ]; do
+			Write2Log debug "sample is not ready"
 			STATUS=$(sshpass -p ${_HARVEST_PASSWORD} \
 			ssh -o StrictHostKeyChecking=no \
 			-l ${_HARVEST_USERNAME}  ${_HARVEST_HOSTNAME} \
 			"set d; statistics samples show -fields sample-status" 2>/dev/null | grep Ready)
 			Write2Log debug "$STATUS"
-
+			
 			STATUSERROR=$(sshpass -p ${_HARVEST_PASSWORD} \
 			ssh -o StrictHostKeyChecking=no \
 			-l ${_HARVEST_USERNAME} ${_HARVEST_HOSTNAME} \
 			"set d; statistics samples show -fields sample-status" 2>/dev/null | grep Error)
 			
 			if [ -n "{$STATUSERROR}" ]; then
+				Write2Log debug "sample have error"
 				STATUS="Error"
 			fi
 		done
