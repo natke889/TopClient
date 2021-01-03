@@ -69,8 +69,8 @@ RunTheTask() {
 		ssh -o StrictHostKeyChecking=no \
 		-l ${_HARVEST_USERNAME}  ${_HARVEST_HOSTNAME} \
 		"set d; statistics start -object top_client -sample-id sample_111 -sort-key total_ops" 2>/dev/null
-		sleep 30
-                Write2Log debug "stop sample"
+		sleep 10
+		Write2Log debug "stop sample"
 		sshpass -p ${_HARVEST_PASSWORD} \
 		ssh -o StrictHostKeyChecking=no \
 		-l ${_HARVEST_USERNAME}  ${_HARVEST_HOSTNAME} \
@@ -115,7 +115,32 @@ RunTheTask() {
 			CLIENT="${CLIENT//$'\r'/}"
 			TOTAL_OPS="${TOTAL_OPS//$'\r'/}"
 			# Preconstruct Graphite leaf
-			METRIC="$_HARVEST_GRAPHITE_ROOT"
+			METRIC="$_HARVEST_GRAPHITE_ROOT.protocol.cifs"
+			METRIC="$METRIC.svm.$SVM"
+			METRIC="$METRIC.client.$CLIENT"
+			METRIC="$METRIC.total_ops $TOTAL_OPS.0"
+			METRIC="$METRIC $_HARVEST_POLL_EPOCH"
+			Write2Log debug "$METRIC"
+			#echo "$METRIC"
+			# Send metric to Graphite
+			Send2Graphite "$METRIC"
+		done
+		SAMPLES=$(sshpass -p ${_HARVEST_PASSWORD} \
+		ssh -o StrictHostKeyChecking=no \
+		-l ${_HARVEST_USERNAME}  ${_HARVEST_HOSTNAME} \
+		"set d; statistics show -sample-id sample_111 -tab -counter total_ops|vserver_name|protocol -sort-key total_ops" 2>/dev/null | grep nfs | tr . _ | column -t )
+		Write2Log debug "$SAMPLES"
+		IFS=$'\n'
+		for SAMPLE in $SAMPLES; do
+			Write2Log debug "in the for"
+			SVM=$(echo $SAMPLE | awk ' { print $4 }')
+			CLIENT=$(echo $SAMPLE | awk ' { print $1 }')
+			TOTAL_OPS=$(echo $SAMPLE | awk ' { print $3 }')
+			SVM="${SVM//$'\r'/}"
+			CLIENT="${CLIENT//$'\r'/}"
+			TOTAL_OPS="${TOTAL_OPS//$'\r'/}"
+			# Preconstruct Graphite leaf
+			METRIC="$_HARVEST_GRAPHITE_ROOT.protocol.nfs"
 			METRIC="$METRIC.svm.$SVM"
 			METRIC="$METRIC.client.$CLIENT"
 			METRIC="$METRIC.total_ops $TOTAL_OPS.0"
@@ -126,11 +151,11 @@ RunTheTask() {
 			Send2Graphite "$METRIC"
 		done
 		
+		
 		sshpass -p ${_HARVEST_PASSWORD} \
 		ssh -o StrictHostKeyChecking=no \
 		-l ${_HARVEST_USERNAME}  ${_HARVEST_HOSTNAME} \
 		"set d; statistics sample delete -sample-id sample_111" 2>/dev/null
-
 }
 
 
