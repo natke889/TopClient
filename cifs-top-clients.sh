@@ -115,7 +115,7 @@ RunTheTask() {
 			CLIENT="${CLIENT//$'\r'/}"
 			TOTAL_OPS="${TOTAL_OPS//$'\r'/}"
 			# Preconstruct Graphite leaf
-			METRIC="$_HARVEST_GRAPHITE_ROOT.protocol.cifs"
+			METRIC="$_HARVEST_GRAPHITE_ROOT.top_clients.protocol.cifs"
 			METRIC="$METRIC.svm.$SVM"
 			METRIC="$METRIC.client.$CLIENT"
 			METRIC="$METRIC.total_ops $TOTAL_OPS.0"
@@ -140,7 +140,7 @@ RunTheTask() {
 			CLIENT="${CLIENT//$'\r'/}"
 			TOTAL_OPS="${TOTAL_OPS//$'\r'/}"
 			# Preconstruct Graphite leaf
-			METRIC="$_HARVEST_GRAPHITE_ROOT.protocol.nfs"
+			METRIC="$_HARVEST_GRAPHITE_ROOT.top_clients.protocol.nfs"
 			METRIC="$METRIC.svm.$SVM"
 			METRIC="$METRIC.client.$CLIENT"
 			METRIC="$METRIC.total_ops $TOTAL_OPS.0"
